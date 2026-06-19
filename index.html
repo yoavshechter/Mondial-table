@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>שיבוטים · טבלת מונדיאל 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Archivo:wght@700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg-soft: #121829;
+    --line: #1f2940;
+    --text: #eef2fb;
+    --dim: #8290ad;
+    --gold: #f5c451;
+    --silver: #c8d2e0;
+    --bronze: #d98b4a;
+    --accent: #2f6bff;
+    --pop: #00d68f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--text); font-family: "Heebo", sans-serif; }
+  body {
+    min-height: 100vh;
+    padding: clamp(16px, 4vw, 40px) clamp(12px, 4vw, 24px) 60px;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #16203b 0%, transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, #131a2e 0%, transparent 55%),
+      var(--bg);
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  header { margin-bottom: 22px; }
+  .eyebrow {
+    font-family: "Archivo", sans-serif;
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 6px;
+  }
+  h1 {
+    font-family: "Archivo", "Heebo", sans-serif;
+    font-weight: 900; font-size: clamp(30px, 8vw, 46px);
+    line-height: 0.95; letter-spacing: -0.5px;
+  }
+  .sub { color: var(--dim); font-size: 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pop); box-shadow: 0 0 10px var(--pop); }
+
+  /* פודיום */
+  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 22px 0 14px; }
+  .pod {
+    position: relative; border-radius: 16px; padding: 16px 10px 14px;
+    background: linear-gradient(180deg, var(--bg-soft), #0d1322);
+    border: 1px solid var(--line); text-align: center; overflow: hidden;
+  }
+  .pod .rk { font-family: "Archivo"; font-weight: 900; font-size: 13px; opacity: 0.7; }
+  .pod .nm { font-weight: 700; font-size: clamp(14px, 3.5vw, 18px); margin: 8px 0 4px; }
+  .pod .pts { font-family: "Archivo"; font-weight: 900; font-size: clamp(26px, 7vw, 38px); line-height: 1; }
+  .pod .pts span { font-size: 13px; color: var(--dim); font-weight: 700; margin-right: 3px; }
+  .pod .add { font-size: 11px; color: var(--dim); margin-top: 6px; }
+  .pod.p1 { transform: translateY(-6px); border-color: rgba(245,196,81,0.5); box-shadow: 0 10px 40px -16px rgba(245,196,81,0.55); }
+  .pod.p1::before, .pod.p2::before, .pod.p3::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+  }
+  .pod.p1::before { background: var(--gold); }
+  .pod.p2::before { background: var(--silver); }
+  .pod.p3::before { background: var(--bronze); }
+  .pod.p1 .pts { color: var(--gold); }
+  .pod.p2 .pts { color: var(--silver); }
+  .pod.p3 .pts { color: var(--bronze); }
+
+  /* רשימה */
+  .list { display: flex; flex-direction: column; gap: 6px; }
+  .row {
+    display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 12px;
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .row .rank { font-family: "Archivo"; font-weight: 900; font-size: 17px; color: var(--dim); text-align: center; }
+  .row .name { font-weight: 700; font-size: 16px; }
+  .row .name small { display: block; color: var(--dim); font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .row .total { font-family: "Archivo"; font-weight: 900; font-size: 22px; }
+  .row.new { border-color: rgba(245,196,81,0.5); }
+
+  /* צ'יפים של ניחושים */
+  .preds { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; justify-content: flex-start; }
+  .podium .preds { justify-content: center; }
+  .chip {
+    font-size: 11px; font-weight: 500; color: var(--dim);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    border-radius: 6px; padding: 2px 7px; white-space: nowrap;
+  }
+  .chip.hit {
+    color: #07140d; background: var(--pop); border-color: var(--pop); font-weight: 700;
+  }
+
+  .banner {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 14px; font-size: 14px; color: var(--dim);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .banner.live { border-color: rgba(47,107,255,0.4); }
+  .banner strong { color: var(--text); font-weight: 700; }
+
+  .refresh {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    font-family: "Heebo"; font-weight: 700; font-size: 14px; padding: 10px 18px;
+    margin-top: 6px;
+  }
+  .refresh:active { transform: scale(0.97); }
+  .refresh:disabled { opacity: 0.5; cursor: default; }
+
+  .state { color: var(--dim); padding: 30px 0; text-align: center; font-size: 15px; }
+  .err { color: #ff6b6b; }
+  footer { color: var(--dim); font-size: 12px; text-align: center; margin-top: 26px; line-height: 1.6; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Domino's Challenge · 2026</div>
+    <h1>טבלת שיבוטים</h1>
+    <div class="sub">
+      <span class="dot"></span>
+      <span>דירוג כולל תוספות · מתעדכן בזמן אמת</span>
+    </div>
+  </header>
+
+  <button class="refresh" id="refreshBtn">רענן טבלה</button>
+
+  <div id="content"><div class="state">טוען נתונים…</div></div>
+
+  <footer>
+    הנתונים נמשכים ישירות מ-365scores · ה"תוספת" מתווספת לניקוד המקורי<br>
+    <span id="ts"></span>
+  </footer>
+</div>
+
+<script>
+const content = document.getElementById("content");
+const btn = document.getElementById("refreshBtn");
+const tsEl = document.getElementById("ts");
+
+function fmtTime(iso) {
+  try {
+    const d = new Date(iso);
+    return "עודכן: " + d.toLocaleString("he-IL", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+  } catch { return ""; }
+}
+
+function predLine(r) {
+  const w = r.predWinner ? `<span class="chip ${r.winnerHit ? "hit" : ""}">🏆 ${r.predWinner}${r.winnerBonus ? " +" + r.winnerBonus : ""}</span>` : "";
+  const s = r.predScorer ? `<span class="chip ${r.scorerHit ? "hit" : ""}">⚽ ${r.predScorer}${r.scorerBonus ? " +" + r.scorerBonus : ""}</span>` : "";
+  return w + s;
+}
+
+function podium(rows) {
+  // סדר תצוגה: 2, 1, 3 כדי שהראשון יהיה במרכז
+  const order = [1, 0, 2];
+  const cls = { 0: "p1", 1: "p2", 2: "p3" };
+  return '<div class="podium">' + order.filter(i => rows[i]).map(i => {
+    const r = rows[i];
+    return `<div class="pod ${cls[i]}">
+      <div class="rk">#${i + 1}</div>
+      <div class="nm">${r.name}</div>
+      <div class="pts"><span>נק'</span>${r.total}</div>
+      <div class="add">${r.current} + ${r.add}${r.winnerBonus ? " + " + r.winnerBonus : ""}${r.scorerBonus ? " + " + r.scorerBonus : ""}</div>
+      <div class="preds">${predLine(r)}</div>
+    </div>`;
+  }).join("") + '</div>';
+}
+
+function list(rows) {
+  const rest = rows.slice(3);
+  if (!rest.length) return "";
+  return '<div class="list">' + rest.map((r, idx) => {
+    const rank = idx + 4;
+    const bonusTxt = (r.winnerBonus ? " + " + r.winnerBonus : "") + (r.scorerBonus ? " + " + r.scorerBonus : "");
+    return `<div class="row ${r.isNew ? "new" : ""}">
+      <div class="rank">${rank}</div>
+      <div class="name">${r.name}
+        <small>${r.current} + ${r.add} תוספת${bonusTxt}</small>
+        <div class="preds">${predLine(r)}</div>
+      </div>
+      <div class="total">${r.total}</div>
+    </div>`;
+  }).join("") + '</div>';
+}
+
+function banner(data) {
+  const bp = data.bonusPoints || 12;
+  if (!data.decided) {
+    return `<div class="banner">⏳ <span>בונוסי <strong>נבחרת זוכה</strong> ו<strong>מלך שערים</strong> (${bp} נק' כל אחד) יתווספו בסיום הטורניר. כרגע מוצג הדירוג הנוכחי.</span></div>`;
+  }
+  const parts = [];
+  parts.push(`🏆 זוכה: <strong>${data.actualWinner || "טרם נקבע"}</strong>`);
+  parts.push(`⚽ מלך שערים: <strong>${data.actualScorer || "טרם נקבע"}</strong>`);
+  return `<div class="banner live">${parts.join(" · ")}</div>`;
+}
+
+async function load() {
+  btn.disabled = true;
+  btn.textContent = "טוען…";
+  try {
+    const res = await fetch("/api/table", { cache: "no-store" });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "שגיאה");
+    if (!data.rows.length) { content.innerHTML = '<div class="state">אין נתונים</div>'; return; }
+    content.innerHTML = banner(data) + podium(data.rows) + list(data.rows);
+    tsEl.textContent = fmtTime(data.updatedAt);
+  } catch (e) {
+    content.innerHTML = `<div class="state err">לא הצלחנו למשוך נתונים. נסו שוב בעוד רגע.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "רענן טבלה";
+  }
+}
+
+btn.addEventListener("click", load);
+load();
+</script>
+</body>
+</html>
