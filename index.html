@@ -46,45 +46,44 @@
   .sub { color: var(--dim); font-size: 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pop); box-shadow: 0 0 10px var(--pop); }
 
-  /* פודיום */
-  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 22px 0 14px; }
-  .pod {
-    position: relative; border-radius: 16px; padding: 16px 10px 14px;
-    background: linear-gradient(180deg, var(--bg-soft), #0d1322);
-    border: 1px solid var(--line); text-align: center; overflow: hidden;
-  }
-  .pod .rk { font-family: "Archivo"; font-weight: 900; font-size: 13px; opacity: 0.7; }
-  .pod .nm { font-weight: 700; font-size: clamp(14px, 3.5vw, 18px); margin: 8px 0 4px; }
-  .pod .pts { font-family: "Archivo"; font-weight: 900; font-size: clamp(26px, 7vw, 38px); line-height: 1; }
-  .pod .pts span { font-size: 13px; color: var(--dim); font-weight: 700; margin-right: 3px; }
-  .pod .add { font-size: 11px; color: var(--dim); margin-top: 6px; }
-  .pod.p1 { transform: translateY(-6px); border-color: rgba(245,196,81,0.5); box-shadow: 0 10px 40px -16px rgba(245,196,81,0.55); }
-  .pod.p1::before, .pod.p2::before, .pod.p3::before {
-    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
-  }
-  .pod.p1::before { background: var(--gold); }
-  .pod.p2::before { background: var(--silver); }
-  .pod.p3::before { background: var(--bronze); }
-  .pod.p1 .pts { color: var(--gold); }
-  .pod.p2 .pts { color: var(--silver); }
-  .pod.p3 .pts { color: var(--bronze); }
-
-  /* רשימה */
+  /* רשימה רצופה */
   .list { display: flex; flex-direction: column; gap: 6px; }
   .row {
-    display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 12px;
+    display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px;
     background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px;
-    padding: 12px 14px;
+    padding: 13px 14px; position: relative; overflow: hidden;
   }
-  .row .rank { font-family: "Archivo"; font-weight: 900; font-size: 17px; color: var(--dim); text-align: center; }
+  .row .rank {
+    font-family: "Archivo"; font-weight: 900; font-size: 19px; color: var(--dim);
+    text-align: center;
+  }
   .row .name { font-weight: 700; font-size: 16px; }
   .row .name small { display: block; color: var(--dim); font-weight: 400; font-size: 12px; margin-top: 2px; }
-  .row .total { font-family: "Archivo"; font-weight: 900; font-size: 22px; }
+  .row .total { font-family: "Archivo"; font-weight: 900; font-size: 24px; }
   .row.new { border-color: rgba(245,196,81,0.5); }
+
+  /* הדגשת מדליות למקומות 1-3 */
+  .row.medal::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 4px;
+  }
+  .row.m1::before { background: var(--gold); }
+  .row.m2::before { background: var(--silver); }
+  .row.m3::before { background: var(--bronze); }
+  .row.m1 { border-color: rgba(245,196,81,0.45); }
+  .row.m2 { border-color: rgba(200,210,224,0.35); }
+  .row.m3 { border-color: rgba(217,139,74,0.35); }
+  .row.m1 .rank { color: var(--gold); }
+  .row.m2 .rank { color: var(--silver); }
+  .row.m3 .rank { color: var(--bronze); }
+  .row.m1 .total { color: var(--gold); }
+  .row.m2 .total { color: var(--silver); }
+  .row.m3 .total { color: var(--bronze); }
+  .row.m1 .rank::after { content: " 🥇"; font-size: 13px; }
+  .row.m2 .rank::after { content: " 🥈"; font-size: 13px; }
+  .row.m3 .rank::after { content: " 🥉"; font-size: 13px; }
 
   /* צ'יפים של ניחושים */
   .preds { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; justify-content: flex-start; }
-  .podium .preds { justify-content: center; }
   .chip {
     font-size: 11px; font-weight: 500; color: var(--dim);
     background: rgba(255,255,255,0.04); border: 1px solid var(--line);
@@ -157,29 +156,12 @@ function predLine(r) {
   return w + s;
 }
 
-function podium(rows) {
-  // סדר תצוגה: 2, 1, 3 כדי שהראשון יהיה במרכז
-  const order = [1, 0, 2];
-  const cls = { 0: "p1", 1: "p2", 2: "p3" };
-  return '<div class="podium">' + order.filter(i => rows[i]).map(i => {
-    const r = rows[i];
-    return `<div class="pod ${cls[i]}">
-      <div class="rk">#${i + 1}</div>
-      <div class="nm">${r.name}</div>
-      <div class="pts"><span>נק'</span>${r.total}</div>
-      <div class="add">${r.current} + ${r.add}${r.winnerBonus ? " + " + r.winnerBonus : ""}${r.scorerBonus ? " + " + r.scorerBonus : ""}</div>
-      <div class="preds">${predLine(r)}</div>
-    </div>`;
-  }).join("") + '</div>';
-}
-
 function list(rows) {
-  const rest = rows.slice(3);
-  if (!rest.length) return "";
-  return '<div class="list">' + rest.map((r, idx) => {
-    const rank = idx + 4;
+  return '<div class="list">' + rows.map((r, idx) => {
+    const rank = idx + 1;
+    const medal = rank <= 3 ? `medal m${rank}` : "";
     const bonusTxt = (r.winnerBonus ? " + " + r.winnerBonus : "") + (r.scorerBonus ? " + " + r.scorerBonus : "");
-    return `<div class="row ${r.isNew ? "new" : ""}">
+    return `<div class="row ${medal} ${r.isNew ? "new" : ""}">
       <div class="rank">${rank}</div>
       <div class="name">${r.name}
         <small>${r.current} + ${r.add} תוספת${bonusTxt}</small>
@@ -209,7 +191,7 @@ async function load() {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "שגיאה");
     if (!data.rows.length) { content.innerHTML = '<div class="state">אין נתונים</div>'; return; }
-    content.innerHTML = banner(data) + podium(data.rows) + list(data.rows);
+    content.innerHTML = banner(data) + list(data.rows);
     tsEl.textContent = fmtTime(data.updatedAt);
   } catch (e) {
     content.innerHTML = `<div class="state err">לא הצלחנו למשוך נתונים. נסו שוב בעוד רגע.</div>`;
