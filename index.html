@@ -101,6 +101,44 @@
   .banner.live { border-color: rgba(47,107,255,0.4); }
   .banner strong { color: var(--text); font-weight: 700; }
 
+  /* באנר משחק חי */
+  .banner.match { border-color: rgba(0,214,143,0.4); flex-direction: column; align-items: stretch; gap: 10px; }
+  .scorebrd { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .scorebrd .tm { font-weight: 700; font-size: 15px; color: var(--text); flex: 1; text-align: center; }
+  .scorebrd .sc {
+    font-family: "Archivo"; font-weight: 900; font-size: 26px; color: var(--pop);
+    background: rgba(0,214,143,0.1); border-radius: 8px; padding: 4px 14px; white-space: nowrap;
+  }
+  .scorebrd-top { display: flex; align-items: center; justify-content: space-between; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; color: #07140d; background: var(--pop);
+    border-radius: 6px; padding: 2px 8px;
+  }
+  .live-pill::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%; background: #07140d;
+    animation: pulse 1.2s infinite;
+  }
+  .live-min { font-size: 12px; color: var(--dim); font-weight: 700; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .tag-live {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    color: var(--pop); background: rgba(0,214,143,0.12);
+    border: 1px solid rgba(0,214,143,0.4); border-radius: 6px;
+    padding: 1px 6px; margin-right: 6px;
+  }
+
+  /* צ'יפ ניחוש המשחק הנוכחי */
+  .bet {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;
+    border-radius: 6px; padding: 1px 7px; margin-right: 6px; border: 1px solid var(--line);
+    color: var(--dim); background: rgba(255,255,255,0.03);
+  }
+  .bet b { font-family: "Archivo"; }
+  .bet.exact { color: #07140d; background: var(--pop); border-color: var(--pop); }
+  .bet.dir { color: #1a1205; background: var(--gold); border-color: var(--gold); }
+  .bet.miss { color: var(--dim); }
+
   .refresh {
     display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
     background: var(--accent); color: #fff; border: none; border-radius: 10px;
@@ -156,16 +194,25 @@ function predLine(r) {
   return w + s;
 }
 
+function betChip(r) {
+  if (!r.gameBet || r.gameBet.t1 === null) return "";
+  const b = r.gameBet;
+  const cls = b.outcome === 3 ? "exact" : b.outcome === 2 ? "dir" : "miss";
+  const pts = b.points ? ` +${b.points}` : "";
+  return `<span class="bet ${cls}">ניחוש <b>${b.t1}-${b.t2}</b>${pts}</span>`;
+}
+
 function list(rows) {
   return '<div class="list">' + rows.map((r, idx) => {
     const rank = idx + 1;
     const medal = rank <= 3 ? `medal m${rank}` : "";
     const bonusTxt = (r.winnerBonus ? " + " + r.winnerBonus : "") + (r.scorerBonus ? " + " + r.scorerBonus : "");
+    const liveTag = r.live ? `<span class="tag-live">+${r.live} לייב</span>` : "";
     return `<div class="row ${medal} ${r.isNew ? "new" : ""}">
       <div class="rank">${rank}</div>
-      <div class="name">${r.name}
-        <small>${r.current} + ${r.add} תוספת${bonusTxt}</small>
-        <div class="preds">${predLine(r)}</div>
+      <div class="name">${r.name} ${liveTag}
+        <small>${r.locked} + ${r.add} תוספת${r.live ? " · לייב +" + r.live : ""}${bonusTxt}</small>
+        <div class="preds">${betChip(r)}${predLine(r)}</div>
       </div>
       <div class="total">${r.total}</div>
     </div>`;
@@ -174,13 +221,27 @@ function list(rows) {
 
 function banner(data) {
   const bp = data.bonusPoints || 12;
-  if (!data.decided) {
-    return `<div class="banner">⏳ <span>בונוסי <strong>נבחרת זוכה</strong> ו<strong>מלך שערים</strong> (${bp} נק' כל אחד) יתווספו בסיום הטורניר. כרגע מוצג הדירוג הנוכחי.</span></div>`;
+  let html = "";
+  if (data.hasLiveGame && data.live) {
+    const lv = data.live;
+    html += `<div class="banner match">
+      <div class="scorebrd-top">
+        <span class="live-pill">LIVE</span>
+        <span class="live-min">${lv.minute || ""}</span>
+      </div>
+      <div class="scorebrd">
+        <span class="tm">${lv.team1}</span>
+        <span class="sc">${lv.score1} - ${lv.score2}</span>
+        <span class="tm">${lv.team2}</span>
+      </div>
+    </div>`;
   }
-  const parts = [];
-  parts.push(`🏆 זוכה: <strong>${data.actualWinner || "טרם נקבע"}</strong>`);
-  parts.push(`⚽ מלך שערים: <strong>${data.actualScorer || "טרם נקבע"}</strong>`);
-  return `<div class="banner live">${parts.join(" · ")}</div>`;
+  if (!data.decided) {
+    html += `<div class="banner">⏳ <span>בונוסי <strong>נבחרת זוכה</strong> ו<strong>מלך שערים</strong> (${bp} נק' כל אחד) יתווספו בסיום הטורניר.</span></div>`;
+  } else {
+    html += `<div class="banner live">🏆 זוכה: <strong>${data.actualWinner || "טרם נקבע"}</strong> · ⚽ מלך שערים: <strong>${data.actualScorer || "טרם נקבע"}</strong></div>`;
+  }
+  return html;
 }
 
 async function load() {
