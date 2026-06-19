@@ -79,7 +79,11 @@ export default async function handler(req, res) {
     const rows = members
       .filter((m) => !IGNORE_IDS.has(m.userID))
       .map((m) => {
-        const current = parseInt(m.score, 10) || 0;
+        // score = ניקוד נעול, liveScore = נקודות מהמשחק החי, totalScore = סכום השניים.
+        // משתמשים ב-totalScore כדי לכלול את הלייב (כמו באפליקציה).
+        const locked = parseInt(m.score, 10) || 0;
+        const live = parseInt(m.liveScore, 10) || 0;
+        const current = (m.totalScore != null ? parseInt(m.totalScore, 10) : locked + live) || 0;
         const known = ADDITIONS[m.userID];
         const name = known ? known.name : (m.name || "").trim() + " (חדש!)";
         const add = known ? known.add : 0;
@@ -92,9 +96,23 @@ export default async function handler(req, res) {
 
         const total = current + add + winnerBonus + scorerBonus;
 
+        // ניחוש המשחק הנוכחי (אם יש)
+        let gameBet = null;
+        if (Array.isArray(m.gameBets) && m.gameBets.length > 0) {
+          const b = m.gameBets[0];
+          gameBet = {
+            t1: b.selection?.team1 ?? null,
+            t2: b.selection?.team2 ?? null,
+            points: b.gainedPoints ?? 0,
+            outcome: b.betOutcome ?? 0, // 3=מדויק, 2=כיוון, 0=פספוס
+          };
+        }
+
         return {
           name,
           current,
+          locked,
+          live,
           add,
           predWinner: pred.winner,
           predScorer: pred.scorer,
@@ -103,10 +121,27 @@ export default async function handler(req, res) {
           winnerHit,
           scorerHit,
           total,
+          gameBet,
           isNew: !known,
         };
       })
       .sort((a, b) => b.total - a.total || b.current - a.current);
+
+    // האם יש משחק חי כרגע (משפיע על תצוגת הלייב)
+    const hasLiveGame = Array.isArray(data?.liveGames) && data.liveGames.length > 0;
+    const liveGame = hasLiveGame ? data.liveGames[0] : null;
+    const live = liveGame
+      ? {
+          team1: liveGame.competitors?.[0]?.name || "",
+          team2: liveGame.competitors?.[1]?.name || "",
+          score1: liveGame.scores?.team1 ?? null,
+          score2: liveGame.scores?.team2 ?? null,
+          minute: liveGame.gtd || "",
+        }
+      : null;
+    const liveLabel = live
+      ? `${live.team1} ${live.score1}-${live.score2} ${live.team2} (${live.minute})`
+      : null;
 
     res.status(200).json({
       ok: true,
@@ -116,6 +151,9 @@ export default async function handler(req, res) {
       actualScorer: ACTUAL_SCORER,
       bonusPoints: BONUS_POINTS,
       decided: ACTUAL_WINNER !== null || ACTUAL_SCORER !== null,
+      hasLiveGame,
+      live,
+      liveLabel,
       rows,
     });
   } catch (err) {
