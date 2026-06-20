@@ -108,8 +108,11 @@ export default async function handler(req, res) {
           };
         }
 
+        const rawImage = (m.imageURL || "").trim();
+        const isStockImage = !rawImage || /default\.png/i.test(rawImage) || /b330ca52cb7c4f98bd685f5732e00a91/.test(rawImage);
         return {
           name,
+          imageURL: isStockImage ? null : rawImage,
           current,
           locked,
           live,

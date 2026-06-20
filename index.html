@@ -11,148 +11,221 @@
   :root {
     --bg: #0a0e1a;
     --bg-soft: #121829;
-    --line: #1f2940;
+    --line: rgba(130, 144, 173, 0.12);
+    --line-strong: rgba(130, 144, 173, 0.22);
     --text: #eef2fb;
     --dim: #8290ad;
+    --dim-2: #5a6585;
     --gold: #f5c451;
     --silver: #c8d2e0;
     --bronze: #d98b4a;
     --accent: #2f6bff;
     --pop: #00d68f;
+    --miss: #ff6b6b;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { background: var(--bg); color: var(--text); font-family: "Heebo", sans-serif; }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: "Heebo", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
   body {
     min-height: 100vh;
-    padding: clamp(16px, 4vw, 40px) clamp(12px, 4vw, 24px) 60px;
+    padding: clamp(20px, 5vw, 36px) clamp(14px, 4vw, 22px) 80px;
     background:
       radial-gradient(1200px 600px at 80% -10%, #16203b 0%, transparent 60%),
       radial-gradient(900px 500px at 0% 0%, #131a2e 0%, transparent 55%),
       var(--bg);
   }
-  .wrap { max-width: 640px; margin: 0 auto; }
+  .wrap { max-width: 580px; margin: 0 auto; }
 
   header { margin-bottom: 22px; }
   .eyebrow {
     font-family: "Archivo", sans-serif;
-    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--accent); font-weight: 700; margin-bottom: 6px;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 900;
   }
   h1 {
     font-family: "Archivo", "Heebo", sans-serif;
-    font-weight: 900; font-size: clamp(30px, 8vw, 46px);
-    line-height: 0.95; letter-spacing: -0.5px;
+    font-weight: 900; font-size: clamp(34px, 9vw, 50px);
+    line-height: 0.95; letter-spacing: -0.5px; margin-top: 6px;
   }
-  .sub { color: var(--dim); font-size: 14px; margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pop); box-shadow: 0 0 10px var(--pop); }
+  .meta {
+    color: var(--dim); font-size: 13px; margin-top: 12px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .meta .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--pop); box-shadow: 0 0 10px var(--pop); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .meta .sep { color: var(--dim-2); }
 
-  /* רשימה רצופה */
-  .list { display: flex; flex-direction: column; gap: 6px; }
-  .row {
-    display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px;
-    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px;
-    padding: 13px 14px; position: relative; overflow: hidden;
+  /* bonus banner */
+  .bonus-banner {
+    margin: 14px 0 18px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: rgba(245, 196, 81, 0.04);
+    border: 1px solid rgba(245, 196, 81, 0.18);
+    color: var(--dim);
+    font-size: 13px;
+    line-height: 1.5;
+    display: flex; align-items: center; gap: 10px;
   }
-  .row .rank {
-    font-family: "Archivo"; font-weight: 900; font-size: 19px; color: var(--dim);
-    text-align: center;
+  .bonus-banner .bb-icon { font-size: 16px; flex-shrink: 0; }
+  .bonus-banner strong { color: var(--gold); font-weight: 700; }
+  .bonus-banner.decided {
+    background: rgba(0, 214, 143, 0.05);
+    border-color: rgba(0, 214, 143, 0.22);
   }
-  .row .name { font-weight: 700; font-size: 16px; }
-  .row .name small { display: block; color: var(--dim); font-weight: 400; font-size: 12px; margin-top: 2px; }
-  .row .total { font-family: "Archivo"; font-weight: 900; font-size: 24px; }
-  .row.new { border-color: rgba(245,196,81,0.5); }
+  .bonus-banner.decided strong { color: var(--pop); }
 
-  /* הדגשת מדליות למקומות 1-3 */
-  .row.medal::before {
-    content: ""; position: absolute; inset: 0 auto 0 0; width: 4px;
+  /* live block */
+  .live-block { margin-bottom: 22px; }
+  .live-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 0 4px;
   }
-  .row.m1::before { background: var(--gold); }
-  .row.m2::before { background: var(--silver); }
-  .row.m3::before { background: var(--bronze); }
-  .row.m1 { border-color: rgba(245,196,81,0.45); }
-  .row.m2 { border-color: rgba(200,210,224,0.35); }
-  .row.m3 { border-color: rgba(217,139,74,0.35); }
-  .row.m1 .rank { color: var(--gold); }
-  .row.m2 .rank { color: var(--silver); }
-  .row.m3 .rank { color: var(--bronze); }
-  .row.m1 .total { color: var(--gold); }
-  .row.m2 .total { color: var(--silver); }
-  .row.m3 .total { color: var(--bronze); }
-  .row.m1 .rank::after { content: " 🥇"; font-size: 13px; }
-  .row.m2 .rank::after { content: " 🥈"; font-size: 13px; }
-  .row.m3 .rank::after { content: " 🥉"; font-size: 13px; }
-
-  /* צ'יפים של ניחושים */
-  .preds { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; justify-content: flex-start; }
-  .chip {
-    font-size: 11px; font-weight: 500; color: var(--dim);
-    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
-    border-radius: 6px; padding: 2px 7px; white-space: nowrap;
-  }
-  .chip.hit {
-    color: #07140d; background: var(--pop); border-color: var(--pop); font-weight: 700;
-  }
-
-  .banner {
-    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px;
-    padding: 12px 16px; margin-bottom: 14px; font-size: 14px; color: var(--dim);
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .banner.live { border-color: rgba(47,107,255,0.4); }
-  .banner strong { color: var(--text); font-weight: 700; }
-
-  /* באנר משחק חי */
-  .banner.match { border-color: rgba(0,214,143,0.4); flex-direction: column; align-items: stretch; gap: 10px; }
-  .scorebrd { display: flex; align-items: center; justify-content: center; gap: 14px; }
-  .scorebrd .tm { font-weight: 700; font-size: 15px; color: var(--text); flex: 1; text-align: center; }
-  .scorebrd .sc {
-    font-family: "Archivo"; font-weight: 900; font-size: 26px; color: var(--pop);
-    background: rgba(0,214,143,0.1); border-radius: 8px; padding: 4px 14px; white-space: nowrap;
-  }
-  .scorebrd-top { display: flex; align-items: center; justify-content: space-between; }
   .live-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; font-weight: 700; color: #07140d; background: var(--pop);
-    border-radius: 6px; padding: 2px 8px;
+    font-family: "Archivo"; font-size: 10px; font-weight: 900; letter-spacing: 2px;
+    color: #07140d; background: var(--pop);
+    border-radius: 4px; padding: 3px 7px;
   }
-  .live-pill::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%; background: #07140d;
-    animation: pulse 1.2s infinite;
+  .live-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #07140d; animation: pulse 1.2s infinite; }
+  .live-min { font-size: 13px; color: var(--dim); font-weight: 700; }
+  .live-score {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    padding: 14px 8px 18px;
   }
-  .live-min { font-size: 12px; color: var(--dim); font-weight: 700; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  .tag-live {
-    display: inline-block; font-size: 11px; font-weight: 700;
-    color: var(--pop); background: rgba(0,214,143,0.12);
-    border: 1px solid rgba(0,214,143,0.4); border-radius: 6px;
-    padding: 1px 6px; margin-right: 6px;
+  .live-score .team { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+  .live-score .score {
+    font-family: "Archivo"; font-weight: 900; font-size: 38px;
+    letter-spacing: 1px; color: var(--text); white-space: nowrap;
+    line-height: 1;
   }
 
-  /* צ'יפ ניחוש המשחק הנוכחי */
-  .bet {
-    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;
-    border-radius: 6px; padding: 1px 7px; margin-right: 6px; border: 1px solid var(--line);
-    color: var(--dim); background: rgba(255,255,255,0.03);
+  /* live bet column */
+  .live-bet {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line);
   }
-  .bet b { font-family: "Archivo"; }
-  .bet.exact { color: #07140d; background: var(--pop); border-color: var(--pop); }
-  .bet.dir { color: #1a1205; background: var(--gold); border-color: var(--gold); }
-  .bet.miss { color: var(--dim); }
+  .live-bet .lb-score {
+    font-family: "Archivo"; font-weight: 900; font-size: 15px;
+    color: var(--text); letter-spacing: 0.5px; line-height: 1;
+  }
+  .live-bet .lb-result {
+    font-family: "Archivo"; font-weight: 900; font-size: 10px;
+    letter-spacing: 1px; color: var(--dim);
+    direction: ltr; unicode-bidi: isolate;
+  }
+  .live-bet.exact { background: rgba(0,214,143,0.10); border-color: rgba(0,214,143,0.4); }
+  .live-bet.exact .lb-score, .live-bet.exact .lb-result { color: var(--pop); }
+  .live-bet.dir { background: rgba(245,196,81,0.08); border-color: rgba(245,196,81,0.35); }
+  .live-bet.dir .lb-score, .live-bet.dir .lb-result { color: var(--gold); }
+  .live-bet.miss .lb-result { color: var(--miss); }
+  .no-bet { text-align: center; color: var(--dim-2); font-size: 13px; }
 
-  .refresh {
-    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
-    background: var(--accent); color: #fff; border: none; border-radius: 10px;
-    font-family: "Heebo"; font-weight: 700; font-size: 14px; padding: 10px 18px;
-    margin-top: 6px;
+  /* leaderboard */
+  .section-label {
+    font-size: 11px; color: var(--dim); letter-spacing: 2px;
+    text-transform: uppercase; font-weight: 700;
+    margin: 0 4px 8px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .refresh:active { transform: scale(0.97); }
-  .refresh:disabled { opacity: 0.5; cursor: default; }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: var(--cols);
+    gap: 12px; align-items: center;
+    padding: 0 4px 10px;
+    border-bottom: 1px solid var(--line-strong);
+    margin-bottom: 4px;
+  }
+  .table-head .h {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--dim-2); font-weight: 900; font-family: "Archivo";
+    text-align: center;
+  }
+  .table-head .h.left { text-align: right; }
+
+  .leaderboard { --cols: 32px 40px 1fr 70px 56px; }
+  .leaderboard.no-live { --cols: 32px 40px 1fr 56px; }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--cols);
+    align-items: center; gap: 12px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .row:hover { background: rgba(255, 255, 255, 0.015); }
+  .row .rank {
+    font-family: "Archivo"; font-weight: 900; font-size: 17px;
+    color: var(--dim-2); text-align: center;
+  }
+  .row.top1 .rank, .row.top1 .total { color: var(--gold); }
+  .row.top2 .rank, .row.top2 .total { color: var(--silver); }
+  .row.top3 .rank, .row.top3 .total { color: var(--bronze); }
+  .row.is-new .name::after {
+    content: "חדש";
+    font-family: "Archivo"; font-size: 9px; letter-spacing: 1.5px; font-weight: 900;
+    color: var(--gold); background: rgba(245, 196, 81, 0.14);
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    overflow: hidden; flex-shrink: 0; background: #1a2238;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Archivo"; font-weight: 900; font-size: 14px; color: #fff;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .row .info { min-width: 0; }
+  .row .name {
+    font-size: 16px; font-weight: 700; line-height: 1.2;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .row .pred {
+    font-size: 12px; color: var(--dim); margin-top: 3px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .row .pred .sep { color: var(--dim-2); }
+  .row .pred .hit { color: var(--pop); font-weight: 700; }
+  .row .total {
+    font-family: "Archivo"; font-weight: 900; font-size: 28px;
+    letter-spacing: -1px; line-height: 1; text-align: center;
+  }
+
+  .row .expand {
+    display: none; grid-column: 1 / -1;
+    margin-top: 10px; padding: 14px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .row.open { background: rgba(255,255,255,0.015); }
+  .row.open .expand { display: grid; gap: 6px; grid-template-columns: 1fr 1fr; }
+  .expand .k { color: var(--dim); font-size: 11px; }
+  .expand .v { font-weight: 700; font-size: 14px; }
+
+  /* avatar gradient fallbacks */
+  .a0 { background: linear-gradient(135deg, #ff8a5b, #ff5e7e); }
+  .a1 { background: linear-gradient(135deg, #5b8eff, #b85bff); }
+  .a2 { background: linear-gradient(135deg, #00d68f, #2f6bff); }
+  .a3 { background: linear-gradient(135deg, #f5c451, #ff8a5b); }
+  .a4 { background: linear-gradient(135deg, #b85bff, #ff5e7e); }
+  .a5 { background: linear-gradient(135deg, #00d68f, #f5c451); }
+  .a6 { background: linear-gradient(135deg, #5b8eff, #00d68f); }
+  .a7 { background: linear-gradient(135deg, #d98b4a, #f5c451); }
 
   .state { color: var(--dim); padding: 30px 0; text-align: center; font-size: 15px; }
-  .err { color: #ff6b6b; }
-  footer { color: var(--dim); font-size: 12px; text-align: center; margin-top: 26px; line-height: 1.6; }
-
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  .err { color: var(--miss); }
+  footer {
+    color: var(--dim-2); font-size: 11px; text-align: center;
+    margin-top: 36px; letter-spacing: 1px;
+  }
 </style>
 </head>
 <body>
@@ -160,110 +233,158 @@
   <header>
     <div class="eyebrow">Domino's Challenge · 2026</div>
     <h1>טבלת שיבוטים</h1>
-    <div class="sub">
-      <span class="dot"></span>
-      <span>דירוג כולל תוספות · מתעדכן בזמן אמת</span>
+    <div class="meta">
+      <span class="pulse"></span>
+      <span id="ts">טוען…</span>
+      <span class="sep">·</span>
+      <span id="count"></span>
     </div>
   </header>
 
-  <button class="refresh" id="refreshBtn">רענן טבלה</button>
-
   <div id="content"><div class="state">טוען נתונים…</div></div>
 
-  <footer>
-    הנתונים נמשכים ישירות מ-365scores · ה"תוספת" מתווספת לניקוד המקורי<br>
-    <span id="ts"></span>
-  </footer>
+  <footer>נתונים מ-365SCORES</footer>
 </div>
 
 <script>
 const content = document.getElementById("content");
-const btn = document.getElementById("refreshBtn");
 const tsEl = document.getElementById("ts");
+const countEl = document.getElementById("count");
 
 function fmtTime(iso) {
   try {
     const d = new Date(iso);
-    return "עודכן: " + d.toLocaleString("he-IL", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
+    return "עודכן " + d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
   } catch { return ""; }
 }
 
-function predLine(r) {
-  const w = r.predWinner ? `<span class="chip ${r.winnerHit ? "hit" : ""}">🏆 ${r.predWinner}${r.winnerBonus ? " +" + r.winnerBonus : ""}</span>` : "";
-  const s = r.predScorer ? `<span class="chip ${r.scorerHit ? "hit" : ""}">⚽ ${r.predScorer}${r.scorerBonus ? " +" + r.scorerBonus : ""}</span>` : "";
-  return w + s;
+function initials(name) {
+  const t = (name || "").trim();
+  if (!t) return "?";
+  return t.slice(0, 2);
 }
 
-function betChip(r) {
-  if (!r.gameBet || r.gameBet.t1 === null) return "";
+function avatarHTML(r, idx) {
+  const fallbackClass = "a" + (idx % 8);
+  if (r.imageURL) {
+    return `<div class="avatar"><img src="${r.imageURL}" alt="" loading="lazy" onerror="this.parentElement.classList.add('${fallbackClass}'); this.replaceWith(document.createTextNode('${initials(r.name)}'));"></div>`;
+  }
+  return `<div class="avatar ${fallbackClass}">${initials(r.name)}</div>`;
+}
+
+function liveBetCell(r) {
   const b = r.gameBet;
+  if (!b || b.t1 === null || b.t1 === undefined) {
+    return `<div class="no-bet">—</div>`;
+  }
   const cls = b.outcome === 3 ? "exact" : b.outcome === 2 ? "dir" : "miss";
-  const pts = b.points ? ` +${b.points}` : "";
-  return `<span class="bet ${cls}">ניחוש <b>${b.t1}-${b.t2}</b>${pts}</span>`;
+  const pts = (b.points && b.points > 0) ? `+${b.points}` : `0`;
+  return `<div class="live-bet ${cls}">
+    <span class="lb-score">${b.t1} — ${b.t2}</span>
+    <span class="lb-result">${pts}</span>
+  </div>`;
 }
 
-function list(rows) {
-  return '<div class="list">' + rows.map((r, idx) => {
-    const rank = idx + 1;
-    const medal = rank <= 3 ? `medal m${rank}` : "";
-    const bonusTxt = (r.winnerBonus ? " + " + r.winnerBonus : "") + (r.scorerBonus ? " + " + r.scorerBonus : "");
-    const liveTag = r.live ? `<span class="tag-live">+${r.live} לייב</span>` : "";
-    return `<div class="row ${medal} ${r.isNew ? "new" : ""}">
-      <div class="rank">${rank}</div>
-      <div class="name">${r.name} ${liveTag}
-        <small>${r.locked} + ${r.add} תוספת${r.live ? " · לייב +" + r.live : ""}${bonusTxt}</small>
-        <div class="preds">${betChip(r)}${predLine(r)}</div>
-      </div>
-      <div class="total">${r.total}</div>
-    </div>`;
-  }).join("") + '</div>';
+function predLine(r) {
+  const w = r.predWinner ? `<span class="${r.winnerHit ? "hit" : ""}">🏆 ${r.predWinner}</span>` : "";
+  const s = r.predScorer ? `<span class="${r.scorerHit ? "hit" : ""}">⚽ ${r.predScorer}</span>` : "";
+  if (!w && !s) return "";
+  return `${w}${w && s ? '<span class="sep">·</span>' : ""}${s}`;
 }
 
-function banner(data) {
+function rowHTML(r, idx, hasLive) {
+  const rank = idx + 1;
+  const top = rank <= 3 ? "top" + rank : "";
+  const isNew = r.isNew ? "is-new" : "";
+  const liveCell = hasLive ? liveBetCell(r) : "";
+  const liveLabel = (r.live && r.live > 0) ? ` · לייב +${r.live}` : "";
+  const winnerExpand = r.winnerBonus ? `<div><div class="k">בונוס זוכה</div><div class="v" style="color:var(--pop)">+${r.winnerBonus}</div></div>` : "";
+  const scorerExpand = r.scorerBonus ? `<div><div class="k">בונוס מלך שערים</div><div class="v" style="color:var(--pop)">+${r.scorerBonus}</div></div>` : "";
+
+  return `<div class="row ${top} ${isNew}" onclick="this.classList.toggle('open')">
+    <div class="rank">${rank}</div>
+    ${avatarHTML(r, idx)}
+    <div class="info">
+      <div class="name">${r.name}</div>
+      <div class="pred">${predLine(r)}</div>
+    </div>
+    ${liveCell}
+    <div class="total">${r.total}</div>
+    <div class="expand">
+      <div><div class="k">נעול</div><div class="v">${r.locked}${liveLabel}</div></div>
+      <div><div class="k">תוספת</div><div class="v">+${r.add}</div></div>
+      ${winnerExpand}
+      ${scorerExpand}
+    </div>
+  </div>`;
+}
+
+function bonusBanner(data) {
   const bp = data.bonusPoints || 12;
-  let html = "";
-  if (data.hasLiveGame && data.live) {
-    const lv = data.live;
-    html += `<div class="banner match">
-      <div class="scorebrd-top">
-        <span class="live-pill">LIVE</span>
-        <span class="live-min">${lv.minute || ""}</span>
-      </div>
-      <div class="scorebrd">
-        <span class="tm">${lv.team1}</span>
-        <span class="sc">${lv.score1} - ${lv.score2}</span>
-        <span class="tm">${lv.team2}</span>
-      </div>
+  if (data.decided) {
+    return `<div class="bonus-banner decided">
+      <span class="bb-icon">🏆</span>
+      <span>זוכה: <strong>${data.actualWinner || "טרם נקבע"}</strong> · מלך שערים: <strong>${data.actualScorer || "טרם נקבע"}</strong></span>
     </div>`;
   }
-  if (!data.decided) {
-    html += `<div class="banner">⏳ <span>בונוסי <strong>נבחרת זוכה</strong> ו<strong>מלך שערים</strong> (${bp} נק' כל אחד) יתווספו בסיום הטורניר.</span></div>`;
-  } else {
-    html += `<div class="banner live">🏆 זוכה: <strong>${data.actualWinner || "טרם נקבע"}</strong> · ⚽ מלך שערים: <strong>${data.actualScorer || "טרם נקבע"}</strong></div>`;
-  }
-  return html;
+  return `<div class="bonus-banner">
+    <span class="bb-icon">⏳</span>
+    <span>בונוסי <strong>נבחרת זוכה</strong> ו<strong>מלך שערים</strong> (${bp} נק' כל אחד) יתווספו בסיום הטורניר</span>
+  </div>`;
+}
+
+function liveBlock(data) {
+  if (!data.hasLiveGame || !data.live) return "";
+  const lv = data.live;
+  return `<section class="live-block">
+    <div class="live-head">
+      <span class="live-pill">LIVE</span>
+      <span class="live-min">${lv.minute || ""}</span>
+    </div>
+    <div class="live-score">
+      <span class="team">${lv.team1}</span>
+      <span class="score">${lv.score1} — ${lv.score2}</span>
+      <span class="team">${lv.team2}</span>
+    </div>
+  </section>`;
+}
+
+function tableSection(data) {
+  const hasLive = !!data.hasLiveGame;
+  const headExtra = hasLive ? `<div class="h">ניחוש</div>` : "";
+  const rows = data.rows.map((r, i) => rowHTML(r, i, hasLive)).join("");
+  return `<section class="leaderboard${hasLive ? "" : " no-live"}">
+    <div class="section-label">דירוג</div>
+    <div class="table-head">
+      <div></div>
+      <div></div>
+      <div class="h left">שחקן</div>
+      ${headExtra}
+      <div class="h">נקודות</div>
+    </div>
+    ${rows}
+  </section>`;
 }
 
 async function load() {
-  btn.disabled = true;
-  btn.textContent = "טוען…";
   try {
     const res = await fetch("/api/table", { cache: "no-store" });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "שגיאה");
-    if (!data.rows.length) { content.innerHTML = '<div class="state">אין נתונים</div>'; return; }
-    content.innerHTML = banner(data) + list(data.rows);
+    if (!data.rows || !data.rows.length) {
+      content.innerHTML = '<div class="state">אין נתונים</div>';
+      return;
+    }
+    content.innerHTML = bonusBanner(data) + liveBlock(data) + tableSection(data);
     tsEl.textContent = fmtTime(data.updatedAt);
+    countEl.textContent = `${data.rows.length} שחקנים`;
   } catch (e) {
     content.innerHTML = `<div class="state err">לא הצלחנו למשוך נתונים. נסו שוב בעוד רגע.</div>`;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "רענן טבלה";
   }
 }
 
-btn.addEventListener("click", load);
 load();
+setInterval(load, 30000);
 </script>
 </body>
 </html>
