@@ -78,28 +78,26 @@
   }
   .bonus-banner.decided strong { color: var(--pop); }
 
-  /* live block */
-  .live-block { margin-bottom: 22px; }
-  .live-head {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 0 4px;
+  /* live games stack */
+  .games-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .game-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--line);
   }
-  .live-pill {
+  .gc-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .gc-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    font-family: "Archivo"; font-size: 10px; font-weight: 900; letter-spacing: 2px;
+    font-family: "Archivo"; font-size: 9px; font-weight: 900; letter-spacing: 2px;
     color: #07140d; background: var(--pop);
-    border-radius: 4px; padding: 3px 7px;
+    border-radius: 4px; padding: 2px 6px;
   }
-  .live-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #07140d; animation: pulse 1.2s infinite; }
-  .live-min { font-size: 13px; color: var(--dim); font-weight: 700; }
-  .live-score {
-    display: flex; align-items: center; justify-content: center; gap: 18px;
-    padding: 14px 8px 18px;
-  }
-  .live-score .team { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
-  .live-score .score {
-    font-family: "Archivo"; font-weight: 900; font-size: 38px;
-    letter-spacing: 1px; color: var(--text); white-space: nowrap;
-    line-height: 1;
+  .gc-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #07140d; animation: pulse 1.2s infinite; }
+  .gc-min { font-size: 11px; color: var(--dim); font-weight: 700; }
+  .gc-teams { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; text-align: center; }
+  .gc-score {
+    font-family: "Archivo"; font-weight: 900; font-size: 22px;
+    letter-spacing: 0.5px; color: var(--text); flex-shrink: 0;
   }
 
   /* live bet column */
@@ -150,8 +148,9 @@
   }
   .table-head .h.left { text-align: right; }
 
-  .leaderboard { --cols: 32px 40px 1fr 70px 56px; }
-  .leaderboard.no-live { --cols: 32px 40px 1fr 56px; }
+  .leaderboard { --cols: 32px 40px 1fr 56px; }
+  .wrap.has-live-2 { max-width: 640px; }
+  .wrap.has-live-3 { max-width: 720px; }
 
   .row {
     display: grid;
@@ -272,8 +271,8 @@ function avatarHTML(r, idx) {
   return `<div class="avatar ${fallbackClass}">${initials(r.name)}</div>`;
 }
 
-function liveBetCell(r) {
-  const b = r.gameBet;
+function liveBetCell(r, gameID) {
+  const b = r.gameBets?.[gameID];
   if (!b || b.t1 === null || b.t1 === undefined) {
     return `<div class="no-bet">—</div>`;
   }
@@ -292,11 +291,11 @@ function predLine(r) {
   return `${w}${w && s ? '<span class="sep">·</span>' : ""}${s}`;
 }
 
-function rowHTML(r, idx, hasLive) {
+function rowHTML(r, idx, liveGames) {
   const rank = idx + 1;
   const top = rank <= 3 ? "top" + rank : "";
   const isNew = r.isNew ? "is-new" : "";
-  const liveCell = hasLive ? liveBetCell(r) : "";
+  const betCells = liveGames.map(g => liveBetCell(r, g.gameID)).join("");
   const liveLabel = (r.live && r.live > 0) ? ` · לייב +${r.live}` : "";
   const winnerExpand = r.winnerBonus ? `<div><div class="k">בונוס זוכה</div><div class="v" style="color:var(--pop)">+${r.winnerBonus}</div></div>` : "";
   const scorerExpand = r.scorerBonus ? `<div><div class="k">בונוס מלך שערים</div><div class="v" style="color:var(--pop)">+${r.scorerBonus}</div></div>` : "";
@@ -308,7 +307,7 @@ function rowHTML(r, idx, hasLive) {
       <div class="name">${r.name}</div>
       <div class="pred">${predLine(r)}</div>
     </div>
-    ${liveCell}
+    ${betCells}
     <div class="total">${r.total}</div>
     <div class="expand">
       <div><div class="k">נעול</div><div class="v">${r.locked}${liveLabel}</div></div>
@@ -333,38 +332,45 @@ function bonusBanner(data) {
   </div>`;
 }
 
+function teamAbbr(name) {
+  return (name || "").trim().split(/\s+/)[0].slice(0, 4);
+}
+
 function liveBlock(data) {
-  if (!data.hasLiveGame || !data.live) return "";
-  const lv = data.live;
-  return `<section class="live-block">
-    <div class="live-head">
-      <span class="live-pill">LIVE</span>
-      <span class="live-min">${lv.minute || ""}</span>
-    </div>
-    <div class="live-score">
-      <span class="team">${lv.team1}</span>
-      <span class="score">${lv.score1} — ${lv.score2}</span>
-      <span class="team">${lv.team2}</span>
-    </div>
-  </section>`;
+  const games = data.liveGames || [];
+  if (!games.length) return "";
+  const cards = games.map(g => `
+    <div class="game-card">
+      <div class="gc-meta">
+        <span class="gc-pill">LIVE</span>
+        <span class="gc-min">${g.minute || ""}</span>
+      </div>
+      <span class="gc-teams">${g.team1} · ${g.team2}</span>
+      <span class="gc-score">${g.score1} — ${g.score2}</span>
+    </div>`).join("");
+  return `<div class="games-stack">${cards}</div>`;
 }
 
 function tableSection(data) {
-  const hasLive = !!data.hasLiveGame;
-  const headExtra = hasLive ? `<div class="h">ניחוש</div>` : "";
-  const rows = data.rows.map((r, i) => rowHTML(r, i, hasLive)).join("");
-  return `<section class="leaderboard${hasLive ? "" : " no-live"}">
+  const games = data.liveGames || [];
+  const cols = ["32px", "40px", "1fr", ...games.map(() => "70px"), "56px"];
+  const colsCss = cols.join(" ");
+  const headBets = games.map(g => `<div class="h">${teamAbbr(g.team1)}—${teamAbbr(g.team2)}</div>`).join("");
+  const rows = data.rows.map((r, i) => rowHTML(r, i, games)).join("");
+  return `<section class="leaderboard" style="--cols: ${colsCss}">
     <div class="section-label">דירוג</div>
     <div class="table-head">
       <div></div>
       <div></div>
       <div class="h left">שחקן</div>
-      ${headExtra}
+      ${headBets}
       <div class="h">נקודות</div>
     </div>
     ${rows}
   </section>`;
 }
+
+const wrapEl = document.querySelector(".wrap");
 
 async function load() {
   try {
@@ -375,6 +381,9 @@ async function load() {
       content.innerHTML = '<div class="state">אין נתונים</div>';
       return;
     }
+    const liveCount = (data.liveGames || []).length;
+    wrapEl.classList.toggle("has-live-2", liveCount === 2);
+    wrapEl.classList.toggle("has-live-3", liveCount >= 3);
     content.innerHTML = bonusBanner(data) + liveBlock(data) + tableSection(data);
     tsEl.textContent = fmtTime(data.updatedAt);
     countEl.textContent = `${data.rows.length} שחקנים`;

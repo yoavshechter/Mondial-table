@@ -96,20 +96,26 @@ export default async function handler(req, res) {
 
         const total = current + add + winnerBonus + scorerBonus;
 
-        // ניחוש המשחק הנוכחי (אם יש)
-        let gameBet = null;
-        if (Array.isArray(m.gameBets) && m.gameBets.length > 0) {
-          const b = m.gameBets[0];
-          gameBet = {
-            t1: b.selection?.team1 ?? null,
-            t2: b.selection?.team2 ?? null,
-            points: b.gainedPoints ?? 0,
-            outcome: b.betOutcome ?? 0, // 3=מדויק, 2=כיוון, 0=פספוס
-          };
+        // ניחושים למשחקים החיים, לפי gameID
+        const gameBets = {};
+        if (Array.isArray(m.gameBets)) {
+          for (const b of m.gameBets) {
+            if (b?.gameID == null) continue;
+            gameBets[b.gameID] = {
+              t1: b.selection?.team1 ?? null,
+              t2: b.selection?.team2 ?? null,
+              points: b.gainedPoints ?? 0,
+              outcome: b.betOutcome ?? 0, // 3=מדויק, 2=כיוון, 0=פספוס
+            };
+          }
         }
+        // first/legacy bet for backwards compat
+        const gameBet = m.gameBets?.[0]
+          ? gameBets[m.gameBets[0].gameID]
+          : null;
 
         const rawImage = (m.imageURL || "").trim();
-        const isStockImage = !rawImage || /default\.png/i.test(rawImage) || /b330ca52cb7c4f98bd685f5732e00a91/.test(rawImage);
+        const isStockImage = !rawImage || /b330ca52cb7c4f98bd685f5732e00a91/.test(rawImage);
         return {
           name,
           imageURL: isStockImage ? null : rawImage,
@@ -125,26 +131,23 @@ export default async function handler(req, res) {
           scorerHit,
           total,
           gameBet,
+          gameBets,
           isNew: !known,
         };
       })
       .sort((a, b) => b.total - a.total || b.current - a.current);
 
-    // האם יש משחק חי כרגע (משפיע על תצוגת הלייב)
-    const hasLiveGame = Array.isArray(data?.liveGames) && data.liveGames.length > 0;
-    const liveGame = hasLiveGame ? data.liveGames[0] : null;
-    const live = liveGame
-      ? {
-          team1: liveGame.competitors?.[0]?.name || "",
-          team2: liveGame.competitors?.[1]?.name || "",
-          score1: liveGame.scores?.team1 ?? null,
-          score2: liveGame.scores?.team2 ?? null,
-          minute: liveGame.gtd || "",
-        }
-      : null;
-    const liveLabel = live
-      ? `${live.team1} ${live.score1}-${live.score2} ${live.team2} (${live.minute})`
-      : null;
+    // משחקים חיים כרגע
+    const liveGamesRaw = Array.isArray(data?.liveGames) ? data.liveGames : [];
+    const liveGames = liveGamesRaw.map((g) => ({
+      gameID: g.gameID,
+      team1: g.competitors?.[0]?.name || "",
+      team2: g.competitors?.[1]?.name || "",
+      score1: g.scores?.team1 ?? null,
+      score2: g.scores?.team2 ?? null,
+      minute: g.gtd || "",
+    }));
+    const hasLiveGame = liveGames.length > 0;
 
     res.status(200).json({
       ok: true,
@@ -155,8 +158,7 @@ export default async function handler(req, res) {
       bonusPoints: BONUS_POINTS,
       decided: ACTUAL_WINNER !== null || ACTUAL_SCORER !== null,
       hasLiveGame,
-      live,
-      liveLabel,
+      liveGames,
       rows,
     });
   } catch (err) {
