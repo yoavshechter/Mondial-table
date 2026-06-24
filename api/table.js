@@ -62,6 +62,152 @@ const ACTUAL_SCORER = null; // לדוגמה: "אמבפה"
 // שחקנים להתעלם מהם (בוטים)
 const IGNORE_IDS = new Set([1]);
 
+// ───────────────────────────────────────────────────────────────
+// תובנות לכל משחק חי: רשימה של { type, label, emoji, text } להצגה.
+// כל תובנה רלוונטית למשחק יחיד וניתן לרנדר אותה ישירות בלי לוגיקה בלקוח.
+function computeGameInsights(liveGame, rows) {
+  const gid = liveGame.gameID;
+  const team1 = liveGame.competitors?.[0]?.name || "";
+  const team2 = liveGame.competitors?.[1]?.name || "";
+  const realT1 = liveGame.scores?.team1;
+  const realT2 = liveGame.scores?.team2;
+  const minute = parseInt(String(liveGame.gtd || "").replace(/\D/g, ""), 10);
+  const lateGame = Number.isFinite(minute) && minute >= 80;
+
+  // אסוף את כל הניחושים של השחקנים למשחק הזה
+  const bets = [];
+  for (const r of rows) {
+    const b = r.gameBets?.[gid];
+    if (!b || b.t1 == null || b.t2 == null) continue;
+    bets.push({ name: r.name, t1: b.t1, t2: b.t2 });
+  }
+  if (!bets.length) return [];
+
+  const insights = [];
+  const key = (b) => `${b.t1}-${b.t2}`;
+
+  // 1) בנדוואגון ("שיבוטים") — הניחוש הנפוץ ביותר אם 3+ שחקנים בחרו בו
+  const counts = new Map();
+  for (const b of bets) {
+    const k = key(b);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  let topKey = null, topCount = 0;
+  for (const [k, c] of counts) {
+    if (c > topCount) { topKey = k; topCount = c; }
+  }
+  if (topCount >= 3) {
+    const [t1, t2] = topKey.split("-").map(Number);
+    const winnerTeam = t1 > t2 ? team1 : t2 > t1 ? team2 : null;
+    const tail = winnerTeam ? `ל${winnerTeam}` : "לתיקו";
+    insights.push({
+      type: "bandwagon",
+      label: "שיבוטים",
+      emoji: "🐑",
+      text: `${topCount} שיבוטים הימרו על ${t1}–${t2} ${tail}`,
+    });
+  }
+
+  // 2) הזאב הבודד — שחקנים עם ניחוש ייחודי (אין אחרים שבחרו בדיוק אותו)
+  const lonely = bets.filter((b) => counts.get(key(b)) === 1);
+  if (lonely.length === 1) {
+    const b = lonely[0];
+    const winnerTeam = b.t1 > b.t2 ? team1 : b.t2 > b.t1 ? team2 : null;
+    const tail = winnerTeam ? `ל${winnerTeam}` : "לתיקו";
+    insights.push({
+      type: "lone-wolf",
+      label: "הזאב הבודד",
+      emoji: "🐺",
+      text: `${b.name} היחיד שהלך על ${b.t1}–${b.t2} ${tail}`,
+    });
+  } else if (lonely.length > 1 && lonely.length <= 4) {
+    const names = lonely.map((b) => b.name).join(", ");
+    insights.push({
+      type: "lone-wolf",
+      label: "הזאב הבודד",
+      emoji: "🐺",
+      text: `${names} — כל אחד עם הניחוש שלו`,
+    });
+  }
+
+  // 3) קרחת או תלתלים — הניחוש עם הכי הרבה גולים (מינימום 4)
+  const maxGoals = Math.max(...bets.map((b) => b.t1 + b.t2));
+  if (maxGoals >= 4) {
+    const wildest = bets.filter((b) => b.t1 + b.t2 === maxGoals);
+    if (wildest.length === 1) {
+      const b = wildest[0];
+      insights.push({
+        type: "wild",
+        label: "קרחת או תלתלים",
+        emoji: "💇",
+        text: `${b.name} הולך על כל הקופה — ${b.t1}–${b.t2}`,
+      });
+    } else if (wildest.length <= 3) {
+      const names = wildest.map((b) => b.name).join(", ");
+      insights.push({
+        type: "wild",
+        label: "קרחת או תלתלים",
+        emoji: "💇",
+        text: `${names} הולכים על כל הקופה (${maxGoals} גולים)`,
+      });
+    }
+  }
+
+  // 4) משעמם — שחקנים שניחשו 0–0
+  const boring = bets.filter((b) => b.t1 === 0 && b.t2 === 0);
+  if (boring.length === 1) {
+    insights.push({
+      type: "boring",
+      label: "0–0",
+      emoji: "😴",
+      text: `${boring[0].name}, הימור משעמם כמוהו`,
+    });
+  } else if (boring.length > 1 && boring.length <= 4) {
+    const names = boring.map((b) => b.name).join(", ");
+    insights.push({
+      type: "boring",
+      label: "0–0",
+      emoji: "😴",
+      text: `${names} — הימור משעמם כמוהם`,
+    });
+  }
+
+  // 5) גול אחד מהבול — הניחוש במרחק גול אחד מהתוצאה הנוכחית בכיוון הנכון
+  if (Number.isFinite(realT1) && Number.isFinite(realT2)) {
+    const oneAway = bets.filter((b) => {
+      const d1 = b.t1 - realT1;
+      const d2 = b.t2 - realT2;
+      // צריך עוד גול אחד בדיוק לאחת הקבוצות, השנייה כבר תואמת
+      return (d1 === 1 && d2 === 0) || (d1 === 0 && d2 === 1);
+    });
+    if (oneAway.length >= 1 && oneAway.length <= 4) {
+      const names = oneAway.map((b) => `${b.name} (${b.t1}–${b.t2})`).join(", ");
+      insights.push({
+        type: "close",
+        label: "גול אחד מהבול",
+        emoji: "🎯",
+        text: `${names}`,
+      });
+    }
+  }
+
+  // 6) יכולים ללכת לים — ניחושים שכבר בלתי אפשריים מתמטית (משחק קרוב לסיום + אי-התאמה)
+  if (lateGame && Number.isFinite(realT1) && Number.isFinite(realT2)) {
+    const busted = bets.filter((b) => b.t1 < realT1 || b.t2 < realT2);
+    if (busted.length >= 2 && busted.length <= 5) {
+      const names = busted.map((b) => b.name).join(", ");
+      insights.push({
+        type: "beach",
+        label: "יכולים ללכת לים",
+        emoji: "🏖️",
+        text: `${names} — הניחוש כבר לא רלוונטי`,
+      });
+    }
+  }
+
+  return insights;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Cache-Control", "no-store");
@@ -146,6 +292,7 @@ export default async function handler(req, res) {
       score1: g.scores?.team1 ?? null,
       score2: g.scores?.team2 ?? null,
       minute: g.gtd || "",
+      insights: computeGameInsights(g, rows),
     }));
     const hasLiveGame = liveGames.length > 0;
 

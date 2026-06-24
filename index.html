@@ -79,12 +79,49 @@
   .bonus-banner.decided strong { color: var(--pop); }
 
   /* live games stack */
-  .games-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .games-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+  .game-block {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
   .game-card {
     display: flex; align-items: center; gap: 14px;
-    padding: 12px 14px; border-radius: 10px;
-    background: rgba(255,255,255,0.02); border: 1px solid var(--line);
+    padding: 12px 14px;
   }
+  .game-block .game-card { background: transparent; border: 0; border-radius: 0; }
+  .game-insights {
+    border-top: 1px solid var(--line);
+  }
+  .insight {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+  .insight:last-child { border-bottom: none; }
+  .insight .ic { font-size: 16px; line-height: 1.2; text-align: center; }
+  .insight .body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .insight .label {
+    font-family: "Archivo", "Heebo";
+    font-size: 9px; letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 900;
+    color: var(--dim-2);
+  }
+  .insight .text {
+    font-size: 13px; line-height: 1.4;
+    color: var(--text); font-weight: 500;
+  }
+  .insight .text strong { color: var(--gold); font-weight: 700; }
+  .insight.bandwagon .label { color: #b85bff; }
+  .insight.lone-wolf .label { color: var(--accent); }
+  .insight.wild .label { color: var(--miss); }
+  .insight.boring .label { color: var(--dim); }
+  .insight.close .label { color: var(--pop); }
+  .insight.beach .label { color: var(--gold); }
   .gc-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .gc-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -336,19 +373,37 @@ function teamAbbr(name) {
   return (name || "").trim().split(/\s+/)[0].slice(0, 4);
 }
 
+function insightHTML(ins) {
+  return `<div class="insight ${ins.type}">
+    <div class="ic">${ins.emoji}</div>
+    <div class="body">
+      <div class="label">${ins.label}</div>
+      <div class="text">${ins.text}</div>
+    </div>
+  </div>`;
+}
+
 function liveBlock(data) {
   const games = data.liveGames || [];
   if (!games.length) return "";
-  const cards = games.map(g => `
-    <div class="game-card">
-      <div class="gc-meta">
-        <span class="gc-pill">LIVE</span>
-        <span class="gc-min">${g.minute || ""}</span>
+  const blocks = games.map(g => {
+    const insights = Array.isArray(g.insights) ? g.insights : [];
+    const insightsBlock = insights.length
+      ? `<div class="game-insights">${insights.map(insightHTML).join("")}</div>`
+      : "";
+    return `<div class="game-block">
+      <div class="game-card">
+        <div class="gc-meta">
+          <span class="gc-pill">LIVE</span>
+          <span class="gc-min">${g.minute || ""}</span>
+        </div>
+        <span class="gc-teams">${g.team1} · ${g.team2}</span>
+        <span class="gc-score">${g.score1} — ${g.score2}</span>
       </div>
-      <span class="gc-teams">${g.team1} · ${g.team2}</span>
-      <span class="gc-score">${g.score1} — ${g.score2}</span>
-    </div>`).join("");
-  return `<div class="games-stack">${cards}</div>`;
+      ${insightsBlock}
+    </div>`;
+  }).join("");
+  return `<div class="games-stack">${blocks}</div>`;
 }
 
 function tableSection(data) {
