@@ -153,8 +153,40 @@ function computeGameInsights(liveGame, rows) {
     }
   }
 
-  // 4) משעמם — שחקנים שניחשו 0–0
-  const boring = bets.filter((b) => b.t1 === 0 && b.t2 === 0);
+  // 4) מתפלל שייגמר כבר — הניחוש זהה לתוצאה הנוכחית
+  if (Number.isFinite(realT1) && Number.isFinite(realT2)) {
+    const onTarget = bets.filter((b) => b.t1 === realT1 && b.t2 === realT2);
+    if (onTarget.length >= 1 && onTarget.length <= 5) {
+      const names = onTarget.map((b) => b.name).join(", ");
+      const verb = onTarget.length === 1 ? "מתפלל" : "מתפללים";
+      insights.push({
+        type: "praying",
+        label: "מתפלל שייגמר כבר",
+        emoji: "🙏",
+        text: `${names} ${verb} שייגמר כבר`,
+      });
+    }
+  }
+
+  // 5) אוכל מאחורה — ניחש את התוצאה בדיוק, אבל הקבוצות הפוכות (ולא תיקו)
+  if (Number.isFinite(realT1) && Number.isFinite(realT2) && realT1 !== realT2) {
+    const flipped = bets.filter((b) => b.t1 === realT2 && b.t2 === realT1);
+    if (flipped.length >= 1 && flipped.length <= 4) {
+      const names = flipped.map((b) => b.name).join(", ");
+      const verb = flipped.length === 1 ? "פגע" : "פגעו";
+      insights.push({
+        type: "backwards",
+        label: "אוכל מאחורה",
+        emoji: "🔄",
+        text: `${names} ${verb} בול — רק הפוך`,
+      });
+    }
+  }
+
+  // 5) משעמם — שחקנים שניחשו 0–0 (ואין להם כבר התאמה לתוצאה הנוכחית)
+  const boring = bets.filter((b) =>
+    b.t1 === 0 && b.t2 === 0 && !(realT1 === 0 && realT2 === 0)
+  );
   if (boring.length === 1) {
     insights.push({
       type: "boring",
