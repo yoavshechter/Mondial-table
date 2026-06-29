@@ -177,8 +177,28 @@ function computeGameInsights(liveGame, rows) {
       insights.push({
         type: "backwards",
         label: "אוכל מאחורה",
-        emoji: "🔄",
+        emoji: "🙃",
         text: `${names} ${verb} בול — רק הפוך`,
+      });
+    }
+  }
+
+  // 6) גבירותי ורבותיי מהפך — מי שעלול לעקוף את המוביל הנוכחי בזכות נקודות מהמשחק הזה
+  if (rows.length >= 2) {
+    const leader = rows[0];
+    const leaderGamePts = leader.gameBets?.[gid]?.points ?? 0;
+    // השחקן הראשון שמרוויח יותר מהמוביל במשחק הזה ובמרחק עקיפה סביר
+    const challenger = rows.slice(1).find((r) => {
+      const pts = r.gameBets?.[gid]?.points ?? 0;
+      const gap = leader.total - r.total;
+      return pts > leaderGamePts && gap >= 0 && gap <= 3;
+    });
+    if (challenger) {
+      insights.push({
+        type: "comeback",
+        label: "גבירותי ורבותיי מהפך",
+        emoji: "👑",
+        text: `${challenger.name} בדרך למקום הראשון`,
       });
     }
   }
