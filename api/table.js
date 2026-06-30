@@ -123,9 +123,9 @@ function computeGameInsights(liveGame, rows) {
   } else if (lonely.length > 1 && lonely.length <= 4) {
     const parts = lonely.map((b) => `${b.name} (${b.t1}–${b.t2})`).join(", ");
     insights.push({
-      type: "lone-wolf",
-      label: "הזאב הבודד",
-      emoji: "🐺",
+      type: "against-stream",
+      label: "הולכים נגד הזרם",
+      emoji: "🐟",
       text: `${parts} עם הימור שונה מהאחרים`,
     });
   }
