@@ -121,12 +121,12 @@ function computeGameInsights(liveGame, rows) {
       text: `${b.name} היחיד שהלך על ${b.t1}–${b.t2} ${tail}`,
     });
   } else if (lonely.length > 1 && lonely.length <= 4) {
-    const names = lonely.map((b) => b.name).join(", ");
+    const parts = lonely.map((b) => `${b.name} (${b.t1}–${b.t2})`).join(", ");
     insights.push({
       type: "lone-wolf",
       label: "הזאב הבודד",
       emoji: "🐺",
-      text: `${names} — כל אחד עם הניחוש שלו`,
+      text: `${parts} עם הימור שונה מהאחרים`,
     });
   }
 
