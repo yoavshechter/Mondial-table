@@ -124,7 +124,7 @@ function computeGameInsights(liveGame, rows) {
     const parts = lonely.map((b) => `${b.name} (${b.t1}–${b.t2})`).join(", ");
     insights.push({
       type: "against-stream",
-      label: "הולכים נגד הזרם",
+      label: "שוחים נגד הזרם",
       emoji: "🐟",
       text: `${parts} עם הימור שונה מהאחרים`,
     });
