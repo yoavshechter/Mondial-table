@@ -183,23 +183,37 @@ function computeGameInsights(liveGame, rows) {
     }
   }
 
-  // 6) גבירותי ורבותיי מהפך — מי שעלול לעקוף את המוביל הנוכחי בזכות נקודות מהמשחק הזה
+  // 6) גבירותי ורבותיי מהפך — שחקן שעוקף או על סף עקיפה בזכות המשחק החי הזה
+  // הניקוד "לפני המשחק" מחושב ע"י הפחתת נקודות המשחק מהסה"כ של כל שחקן
   if (rows.length >= 2) {
-    const leader = rows[0];
-    const leaderGamePts = leader.gameBets?.[gid]?.points ?? 0;
-    // השחקן הראשון שמרוויח יותר מהמוביל במשחק הזה ובמרחק עקיפה סביר
-    const challenger = rows.slice(1).find((r) => {
-      const pts = r.gameBets?.[gid]?.points ?? 0;
-      const gap = leader.total - r.total;
-      return pts > leaderGamePts && gap >= 0 && gap <= 3;
-    });
-    if (challenger) {
+    const pre = (r) => r.total - (r.gameBets?.[gid]?.points ?? 0);
+    const currentLeader = rows[0];
+    const preLeader = [...rows].sort((a, b) => pre(b) - pre(a))[0];
+
+    if (preLeader.name !== currentLeader.name) {
+      // עקיפה כבר התרחשה בזכות המשחק
       insights.push({
         type: "comeback",
         label: "גבירותי ורבותיי מהפך",
         emoji: "👑",
-        text: `${challenger.name} בדרך למקום הראשון`,
+        text: `${currentLeader.name} עקף למקום הראשון`,
       });
+    } else {
+      // אין עקיפה עדיין — נחפש מי קרוב לעקוף בזכות נקודות מהמשחק
+      const challenger = rows.slice(1).find((r) => {
+        const currentGap = currentLeader.total - r.total;
+        const preGap = pre(currentLeader) - pre(r);
+        // הפער נסגר בזכות המשחק והגיע למרחק עקיפה
+        return currentGap >= 0 && currentGap <= 3 && preGap > currentGap;
+      });
+      if (challenger) {
+        insights.push({
+          type: "comeback",
+          label: "גבירותי ורבותיי מהפך",
+          emoji: "👑",
+          text: `${challenger.name} בדרך למקום הראשון`,
+        });
+      }
     }
   }
 
